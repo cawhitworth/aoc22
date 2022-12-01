@@ -48,13 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         for line in reader.lines() {
             let s = line?;
             if s.is_empty() {
-                if let Some(min_of_max_calories) = top_n_max.v.last() {
-                    if running_total_calories > *min_of_max_calories {
-                        top_n_max.insert(running_total_calories);
-                    }
-                } else {
-                    top_n_max.insert(running_total_calories);
-                }
+                top_n_max.insert(running_total_calories);
                 running_total_calories = 0;
             } else {
                 let calories = s.parse::<i32>()?;
@@ -62,10 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
-        let min_of_max_calories = top_n_max.v.last().unwrap().to_owned();
-        if running_total_calories > min_of_max_calories {
-            top_n_max.insert(running_total_calories);
-        }
+        top_n_max.insert(running_total_calories);
 
         println!(
             "{:?} = {}",
