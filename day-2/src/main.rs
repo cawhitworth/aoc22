@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     error::Error,
     fs::File,
     io::{BufRead, BufReader},
@@ -41,9 +40,9 @@ enum Player {
 }
 
 fn winner(player_1: &Move, player_2: &Move) -> Player {
-    if player_1.will_beat(&player_2) {
+    if player_1.will_beat(player_2) {
         Player::Player(1)
-    } else if player_2.will_beat(&player_1) {
+    } else if player_2.will_beat(player_1) {
         Player::Player(2)
     } else {
         Player::None
@@ -100,7 +99,7 @@ fn move_to_play(player_1_move: &Move, winner: &Player) -> Move {
 }
 
 fn score_for_game(them: &Move, me: &Move) -> u32 {
-    let winner = winner(&them, &me);
+    let winner = winner(them, me);
     let mut score = match winner {
         Player::Player(1) => 0,
         Player::Player(2) => 6,
