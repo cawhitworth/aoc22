@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fs::File, error::Error, io::{BufReader, BufRead}};
+use std::{
+    collections::HashMap,
+    error::Error,
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 #[derive(PartialEq, Debug, Copy, Clone)]
 enum Move {
@@ -16,7 +21,7 @@ impl Move {
         match self {
             Move::Rock => Move::Scissors,
             Move::Paper => Move::Rock,
-            Move::Scissors => Move::Paper
+            Move::Scissors => Move::Paper,
         }
     }
 
@@ -24,7 +29,7 @@ impl Move {
         match self {
             Move::Rock => Move::Paper,
             Move::Paper => Move::Scissors,
-            Move::Scissors => Move::Rock
+            Move::Scissors => Move::Rock,
         }
     }
 }
@@ -46,21 +51,20 @@ fn winner(player_1: &Move, player_2: &Move) -> Player {
 }
 
 fn moves_for_line(line: &str) -> (Move, Move) {
-
     let s: Vec<&str> = line.split(' ').collect();
 
     let player_1_move = match s[0] {
         "A" => Move::Rock,
         "B" => Move::Paper,
         "C" => Move::Scissors,
-        _ => panic!("Invalid move")
+        _ => panic!("Invalid move"),
     };
-    
+
     let player_2_move = match s[1] {
         "X" => Move::Rock,
         "Y" => Move::Paper,
         "Z" => Move::Scissors,
-        _ => panic!("Invalid move")
+        _ => panic!("Invalid move"),
     };
 
     (player_1_move, player_2_move)
@@ -73,14 +77,14 @@ fn move_and_result_for_line(line: &str) -> (Move, Player) {
         "A" => Move::Rock,
         "B" => Move::Paper,
         "C" => Move::Scissors,
-        _ => panic!("Invalid move")
+        _ => panic!("Invalid move"),
     };
-    
+
     let result = match s[1] {
         "X" => Player::Player(1),
         "Y" => Player::None,
         "Z" => Player::Player(2),
-        _ => panic!("Invalid move")
+        _ => panic!("Invalid move"),
     };
 
     (player_1_move, result)
@@ -91,14 +95,13 @@ fn move_to_play(player_1_move: &Move, winner: &Player) -> Move {
         Player::Player(1) => player_1_move.beats(),
         Player::Player(2) => player_1_move.beaten_by(),
         Player::None => *player_1_move,
-        Player::Player(_) => panic!("Only two players supported")
+        Player::Player(_) => panic!("Only two players supported"),
     }
 }
 
 fn score_for_game(them: &Move, me: &Move) -> u32 {
     let winner = winner(&them, &me);
-    let mut score = 
-    match winner {
+    let mut score = match winner {
         Player::Player(1) => 0,
         Player::Player(2) => 6,
         Player::Player(_) => panic!("Only two players supported"),
@@ -113,21 +116,19 @@ fn score_for_game(them: &Move, me: &Move) -> u32 {
     score
 }
 
-fn main() -> Result<(), Box<dyn Error>>{
+fn main() -> Result<(), Box<dyn Error>> {
     let mut score_1 = 0;
     let mut score_2 = 0;
     let input = File::open("input")?;
     {
         let reader = BufReader::new(input);
         for line in reader.lines() {
-
             let line_str = line?;
             let (them, me) = moves_for_line(&line_str);
             score_1 += score_for_game(&them, &me);
 
             let (them, result) = move_and_result_for_line(&line_str);
             score_2 += score_for_game(&them, &move_to_play(&them, &result))
-
         }
     }
 
@@ -138,8 +139,7 @@ fn main() -> Result<(), Box<dyn Error>>{
 }
 
 #[cfg(test)]
-mod test
-{
+mod test {
     use super::*;
 
     #[test]
@@ -180,20 +180,26 @@ mod test
     }
 
     #[test]
-    fn check_move_and_result_for_line()
-    {
-        assert_eq!(move_and_result_for_line("A X"), (Move::Rock, Player::Player(1)));
+    fn check_move_and_result_for_line() {
+        assert_eq!(
+            move_and_result_for_line("A X"),
+            (Move::Rock, Player::Player(1))
+        );
         assert_eq!(move_and_result_for_line("B Y"), (Move::Paper, Player::None));
-        assert_eq!(move_and_result_for_line("C Z"), (Move::Scissors, Player::Player(2)));
+        assert_eq!(
+            move_and_result_for_line("C Z"),
+            (Move::Scissors, Player::Player(2))
+        );
     }
 
     #[test]
-    fn check_move_to_play()
-    {
-        assert_eq!(move_to_play(&Move::Rock, &Player::Player(1)), Move::Scissors);
+    fn check_move_to_play() {
+        assert_eq!(
+            move_to_play(&Move::Rock, &Player::Player(1)),
+            Move::Scissors
+        );
         assert_eq!(move_to_play(&Move::Rock, &Player::Player(2)), Move::Paper);
         assert_eq!(move_to_play(&Move::Rock, &Player::None), Move::Rock);
-    
     }
     #[test]
     fn check_test_data_rule2() {
