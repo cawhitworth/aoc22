@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs::File, error::Error, io::{BufReader, BufRead}};
 
 #[derive(PartialEq, Debug, Copy, Clone)]
 enum Move {
@@ -9,11 +9,14 @@ enum Move {
 
 impl Move {
     fn beats(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Move::Rock, Move::Scissors) => true,
-            (Move::Paper, Move::Rock) => true,
-            (Move::Scissors, Move::Paper) => true,
-            (_, _) => false,
+        other.beaten_by() == *self
+    }
+
+    fn beaten_by(&self) -> Self {
+        match self {
+            Move::Rock => Move::Paper,
+            Move::Paper => Move::Scissors,
+            Move::Scissors => Move::Rock
         }
     }
 }
@@ -70,7 +73,20 @@ fn score_for_game(them: &Move, me: &Move) -> u32 {
     score
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>>{
+    let mut score = 0;
+    let input = File::open("input")?;
+    {
+        let reader = BufReader::new(input);
+        for line in reader.lines() {
+            let (them, me) = moves_for_line(&line?);
+            score += score_for_game(&them, &me);
+        }
+    }
+
+    println!("{}", score);
+
+    Ok(())
 }
 
 #[cfg(test)]
