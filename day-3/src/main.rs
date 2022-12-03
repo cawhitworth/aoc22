@@ -1,4 +1,9 @@
-use std::{collections::HashSet, fs::File, error::Error, io::{BufReader, BufRead}};
+use std::{
+    collections::HashSet,
+    error::Error,
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 fn split_rucksack(rucksack: &str) -> (&str, &str) {
     let capacity = rucksack.len();
@@ -34,6 +39,23 @@ fn check_rucksack(rucksack: &str) -> Option<char> {
     }
 }
 
+fn find_common_in_group(rucksacks: &[String]) -> char {
+    let sets: Vec<HashSet<char>> = rucksacks.iter().map(|r| set_from_string(r)).collect();
+
+    let mut s = sets[0].clone();
+    for item in sets.iter().skip(1) {
+        let i = s.intersection(item).cloned();
+        s = i.collect::<HashSet<char>>();
+    }
+
+    if s.len() != 1 {
+        panic!("Expected only one mutual intersection, found {}", s.len())
+    } else {
+        let v = s.iter().collect::<Vec<_>>();
+        *v[0]
+    }
+}
+
 fn score(c: &char) -> u32 {
     if !c.is_ascii() {
         panic!("Cannot score non-ASCII characters")
@@ -42,26 +64,36 @@ fn score(c: &char) -> u32 {
         panic!("Cannot score non-Alphabetic characters")
     }
     let n = *c as u8;
-    if n >= 'a' as u8 && n <= 'z' as u8 {
-        1 + (n - 'a' as u8) as u32
+    if (b'a'..=b'z').contains(&n) {
+        1 + (n - b'a') as u32
     } else {
-        27 + (n - 'A' as u8) as u32
+        27 + (n - b'A') as u32
     }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = File::open("input")?;
     let mut total_score = 0;
+    let mut total_score_2 = 0;
     {
+        let mut group: Vec<String> = Vec::new();
         let reader = BufReader::new(input);
         for line in reader.lines() {
-            if let Some(duplicate) = check_rucksack(&line?) {
+            let str_line = line?;
+            if let Some(duplicate) = check_rucksack(&str_line) {
                 total_score += score(&duplicate);
+            }
+            group.push(str_line.clone());
+            if group.len() == 3 {
+                let common = find_common_in_group(&group);
+                total_score_2 += score(&common);
+                group.clear();
             }
         }
     }
 
     println!("{}", total_score);
+    println!("{}", total_score_2);
     Ok(())
 }
 
@@ -112,5 +144,18 @@ mod test {
         }
 
         assert_eq!(total_score, 157);
+    }
+
+    #[test]
+    fn check_find_common_in_group() {
+        let group: Vec<String> = vec![
+            "vJrwpWtwJgWrhcsFMMfFFhFp".to_string(),
+            "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL".to_string(),
+            "PmmdzqPrVvPwwTWBwg".to_string(),
+        ];
+
+        let common = find_common_in_group(&group);
+
+        assert_eq!(common, 'r');
     }
 }
