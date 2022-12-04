@@ -2,9 +2,10 @@
 
 set -e
 
-for build in skeleton day*; do
+for build in day*; do
     pushd $build
     cargo build
     cargo test
+    cargo clippy -- -Dwarnings
     popd
 done;

@@ -28,6 +28,6 @@ mod test {
 
     #[test]
     fn test() {
-        assert!(false);
+        assert!(true);
     }
 }
