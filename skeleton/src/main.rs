@@ -1,11 +1,14 @@
 mod error;
 use error::Error;
 
-use std::{fs::File, io::{BufReader, BufRead}};
+use std::{
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = File::open("input")?;
-    
+
     let mut total_score = 0;
     {
         let reader = BufReader::new(input);
