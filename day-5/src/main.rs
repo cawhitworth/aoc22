@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use core::fmt;
-use std::{collections::BTreeMap, fs::read_to_string, fmt::Write};
+use std::{collections::BTreeMap, fmt::Write, fs::read_to_string};
 
 type Column = Vec<char>;
 
@@ -25,7 +25,7 @@ impl fmt::Display for Board {
             f.write_fmt(format_args!("{} : {:?}", k, self.columns[&k]))?;
             f.write_char('\n')?;
         }
-        
+
         Ok(())
     }
 }
@@ -55,8 +55,7 @@ fn parse_move(line: &str) -> anyhow::Result<Move> {
     }
 }
 
-fn parse_board(lines: Vec<&str>) -> anyhow::Result<Board>
-{
+fn parse_board(lines: Vec<&str>) -> anyhow::Result<Board> {
     let mut board_lines = lines.iter().rev();
 
     // Last line should be the column labels, so get the number of columns from that
@@ -134,7 +133,10 @@ fn main() -> std::result::Result<(), anyhow::Error> {
 
     let mut lines = input.lines();
 
-    let board_lines = lines.by_ref().take_while(|l| !l.is_empty()).collect::<Vec<_>>();
+    let board_lines = lines
+        .by_ref()
+        .take_while(|l| !l.is_empty())
+        .collect::<Vec<_>>();
     let mut board = parse_board(board_lines)?;
 
     for line in lines {
@@ -164,13 +166,15 @@ move 2 from 2 to 1
 move 1 from 1 to 2";
         let mut lines = input.lines();
 
-        let board_lines = lines.by_ref().take_while(|l| !l.is_empty()).collect::<Vec<_>>();
+        let board_lines = lines
+            .by_ref()
+            .take_while(|l| !l.is_empty())
+            .collect::<Vec<_>>();
         let mut board = parse_board(board_lines)?;
         assert_eq!(board.columns.len(), 3);
         assert_eq!(board.columns[&1], vec!['Z', 'N']);
         assert_eq!(board.columns[&2], vec!['M', 'C', 'D']);
         assert_eq!(board.columns[&3], vec!['P']);
-
 
         for line in lines {
             let m = parse_move(line)?;
@@ -182,7 +186,7 @@ move 1 from 1 to 2";
 
         Ok(())
     }
-   
+
     #[test]
     fn test2() -> anyhow::Result<()> {
         let input = "    [D]    
@@ -196,13 +200,15 @@ move 2 from 2 to 1
 move 1 from 1 to 2";
         let mut lines = input.lines();
 
-        let board_lines = lines.by_ref().take_while(|l| !l.is_empty()).collect::<Vec<_>>();
+        let board_lines = lines
+            .by_ref()
+            .take_while(|l| !l.is_empty())
+            .collect::<Vec<_>>();
         let mut board = parse_board(board_lines)?;
         assert_eq!(board.columns.len(), 3);
         assert_eq!(board.columns[&1], vec!['Z', 'N']);
         assert_eq!(board.columns[&2], vec!['M', 'C', 'D']);
         assert_eq!(board.columns[&3], vec!['P']);
-
 
         for line in lines {
             let m = parse_move(line)?;
