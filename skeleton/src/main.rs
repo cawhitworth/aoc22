@@ -1,12 +1,11 @@
-mod error;
-use error::Error;
+use anyhow::Error;
 
 use std::{
     fs::File,
     io::{BufRead, BufReader},
 };
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> anyhow::Result<()> {
     let input = File::open("input")?;
 
     let mut total_score = 0;
