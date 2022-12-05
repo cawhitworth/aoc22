@@ -22,7 +22,7 @@ impl fmt::Display for Board {
         let mut keys = self.columns.keys().collect::<Vec<_>>();
         keys.sort();
         for k in keys {
-            f.write_fmt(format_args!("{} : {:?}", k, self.columns[&k]))?;
+            f.write_fmt(format_args!("{} : {:?}", k, self.columns[k]))?;
             f.write_char('\n')?;
         }
 
