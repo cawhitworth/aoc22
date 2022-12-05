@@ -4,7 +4,7 @@ use std::{collections::BTreeMap, fmt::Write, fs::read_to_string};
 
 type Column = Vec<char>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Board {
     columns: BTreeMap<usize, Column>,
 }
@@ -138,13 +138,17 @@ fn main() -> std::result::Result<(), anyhow::Error> {
         .take_while(|l| !l.is_empty())
         .collect::<Vec<_>>();
     let mut board = parse_board(board_lines)?;
+    let mut board2 = board.clone();
 
     for line in lines {
         let m = parse_move(line)?;
-        play_move_2(&mut board, &m)?;
+        play_move(&mut board, &m)?;
+        play_move_2(&mut board2, &m)?;
     }
 
     println!("{}", board);
+    println!();
+    println!("{}", board2);
 
     Ok(())
 }
