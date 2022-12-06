@@ -1,9 +1,8 @@
-use anyhow::Error;
+
 
 use std::{
     collections::{HashSet, VecDeque},
-    fs::{read_to_string, File},
-    io::{BufRead, BufReader},
+    fs::{read_to_string},
 };
 
 struct Detector {
@@ -26,7 +25,7 @@ impl Detector {
         self.queue.push_back(c);
         let set_length = self.queue.iter().collect::<HashSet<&char>>().len();
 
-        return set_length == self.capacity;
+        set_length == self.capacity
     }
 
     pub fn detect(&mut self, input: &str) -> Option<usize> {
