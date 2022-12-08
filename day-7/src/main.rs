@@ -2,7 +2,6 @@ use anyhow::{anyhow};
 
 use std::{
     collections::HashMap,
-    io::{BufRead},
 };
 
 #[derive(PartialEq, Debug)]
@@ -31,9 +30,9 @@ fn walk_dirs<'a, I>(mut lines: I) -> anyhow::Result<HashMap<Vec<String>, usize>>
 where
     I: Iterator<Item = &'a str>,
 {
-    let mut dirSizes: HashMap<Vec<String>, usize> = HashMap::new();
-    let mut currentDir = Vec::<String>::new();
-    let mut dirStack = Vec::<Vec<String>>::new();
+    let mut dir_sizes: HashMap<Vec<String>, usize> = HashMap::new();
+    let mut current_dir = Vec::<String>::new();
+    let mut dir_stack = Vec::<Vec<String>>::new();
     loop {
         let line = lines.next();
         if line.is_none() {
@@ -43,37 +42,37 @@ where
         match pl {
             ParsedLine::Cd(dir) => {
                 if dir == *".." {
-                    if !currentDir.is_empty() {
-                        currentDir.pop();
-                        dirStack.pop();
+                    if !current_dir.is_empty() {
+                        current_dir.pop();
+                        dir_stack.pop();
                     } else {
                         return Err(anyhow!("Cannot cd any farther"));
                     }
                 } else {
-                    currentDir.push(dir);
-                    dirStack.push(currentDir.clone());
+                    current_dir.push(dir);
+                    dir_stack.push(current_dir.clone());
                 }
             }
             ParsedLine::Ls => {}
             ParsedLine::File(size) => {
-                for entry in dirStack.clone() {
-                    *dirSizes.entry(entry).or_default() += size;
+                for entry in dir_stack.clone() {
+                    *dir_sizes.entry(entry).or_default() += size;
                 }
             }
             ParsedLine::Dir(_) => {}
         }
     }
-    Ok(dirSizes)
+    Ok(dir_sizes)
 }
 
 fn main() -> anyhow::Result<()> {
     let input = std::fs::read_to_string("input")?;
 
         let lines = input.lines();
-        let dirSizes = walk_dirs(lines)?;
+        let dir_sizes = walk_dirs(lines)?;
         let mut total_size = 0;
         let mut largest = 0;
-        for (_, size) in dirSizes.clone() {
+        for (_, size) in dir_sizes.clone() {
             if size <= 100000 {
                 total_size += size;
             }
@@ -87,7 +86,7 @@ fn main() -> anyhow::Result<()> {
         let unused = 70000000 - largest;
         println!("Unused space: {}", unused);
 
-        let sufficient = dirSizes.iter().map( |(_, s)| s).filter(|s| unused + *s > 30000000);
+        let sufficient = dir_sizes.iter().map( |(_, s)| s).filter(|s| unused + *s > 30000000);
         let smallest_sufficient = sufficient.min().unwrap();
         println!("Smallest sufficient {}", smallest_sufficient);
 
@@ -99,7 +98,7 @@ fn main() -> anyhow::Result<()> {
 mod test {
     use super::*;
 
-    const testData: &str = "$ cd /
+    const TEST_DATA: &str = "$ cd /
 $ ls
 dir a
 14848514 b.txt
@@ -125,7 +124,7 @@ $ ls
 
     #[test]
     fn test_parse() -> anyhow::Result<()> {
-        let mut it = testData.lines();
+        let mut it = TEST_DATA.lines();
         let mut pl = parse_line(it.next().unwrap())?;
         assert_eq!(pl, ParsedLine::Cd("/".to_string()));
         pl = parse_line(it.next().unwrap())?;
@@ -140,10 +139,10 @@ $ ls
 
     #[test]
     fn test_sum() -> anyhow::Result<()> {
-        let it = testData.lines();
-        let dirSizes = walk_dirs(it)?;
+        let it = TEST_DATA.lines();
+        let dir_sizes = walk_dirs(it)?;
         let mut total_size = 0;
-        for (_dir, size) in dirSizes {
+        for (_dir, size) in dir_sizes {
             if size <= 100000 {
                 total_size += size;
             }
