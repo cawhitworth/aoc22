@@ -1,9 +1,9 @@
-use anyhow::Error;
+
 
 use std::{
     fmt::Write,
-    fs::{self, File},
-    io::{BufRead, BufReader},
+    fs::{self},
+    io::{BufRead},
 };
 
 struct HeightMap {
@@ -118,7 +118,7 @@ impl HeightMap {
         let score_left = if x == 0 {
             0
         } else {
-            let (rx, ry, rh) = self.max_height_in_range((0..x).map(|i| (i, y)));
+            let (rx, _ry, rh) = self.max_height_in_range((0..x).map(|i| (i, y)));
             if h > rh {
                 x
             } else {
@@ -129,7 +129,7 @@ impl HeightMap {
         let score_right = if x == self.w - 1 {
             0
         } else {
-            let (rx, ry, rh) = self.max_height_in_range((x + 1..self.w).rev().map(|i| (i, y)));
+            let (rx, _ry, rh) = self.max_height_in_range((x + 1..self.w).rev().map(|i| (i, y)));
             if h > rh {
                 self.w - (x + 1)
             } else {
@@ -140,7 +140,7 @@ impl HeightMap {
         let score_up = if y == 0 {
             y
         } else {
-            let (rx, ry, rh) = self.max_height_in_range((0..y).map(|i| (x, i)));
+            let (_rx, ry, rh) = self.max_height_in_range((0..y).map(|i| (x, i)));
             if h > rh {
                 y
             } else {
@@ -151,7 +151,7 @@ impl HeightMap {
         let score_down = if y == self.h - 1 {
             0
         } else {
-            let (rx, ry, rh) = self.max_height_in_range((y + 1..self.h).rev().map(|i| (x, i)));
+            let (_rx, ry, rh) = self.max_height_in_range((y + 1..self.h).rev().map(|i| (x, i)));
             if h > rh {
                 self.h - (y + 1)
             } else {
