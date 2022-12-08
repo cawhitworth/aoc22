@@ -1,9 +1,6 @@
-
-
 use std::{
+    fs,
     fmt::Write,
-    fs::{self},
-    io::{BufRead},
 };
 
 struct HeightMap {
