@@ -69,18 +69,28 @@ where
 fn main() -> anyhow::Result<()> {
     let input = std::fs::read_to_string("input")?;
 
-    {
         let lines = input.lines();
         let dirSizes = walk_dirs(lines)?;
         let mut total_size = 0;
-        for (_, size) in dirSizes {
+        let mut largest = 0;
+        for (_, size) in dirSizes.clone() {
             if size <= 100000 {
                 total_size += size;
+            }
+            if size > largest {
+                largest = size;
+
             }
         }
 
         println!("Score: {}", total_size);
-    }
+        let unused = 70000000 - largest;
+        println!("Unused space: {}", unused);
+
+        let sufficient = dirSizes.iter().map( |(_, s)| s).filter(|s| unused + *s > 30000000);
+        let smallest_sufficient = sufficient.min().unwrap();
+        println!("Smallest sufficient {}", smallest_sufficient);
+
 
     Ok(())
 }
