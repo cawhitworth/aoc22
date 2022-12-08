@@ -27,12 +27,13 @@ fn parse_line(line: &str) -> anyhow::Result<ParsedLine> {
     }
 }
 
-fn walk_dirs<'a, I>(mut lines: I) -> anyhow::Result<HashMap<String, usize>>
+fn walk_dirs<'a, I>(mut lines: I) -> anyhow::Result<HashMap<Vec<String>, usize>>
 where
     I: Iterator<Item = &'a str>,
 {
-    let mut dirSizes: HashMap<String, usize> = HashMap::new();
-    let mut currentDir = "".to_string();
+    let mut dirSizes: HashMap<Vec<String>, usize> = HashMap::new();
+    let mut currentDir = Vec::<String>::new();
+    let mut dirStack = Vec::<Vec<String>>::new();
     loop {
         let line = lines.next();
         if line.is_none() {
@@ -42,22 +43,22 @@ where
         match pl {
             ParsedLine::Cd(dir) => {
                 if dir == "..".to_string() {
-                    let end = currentDir.rfind('/');
-                    if let Some(index) = end {
-                        let (new_dir, _) = currentDir.split_at(index);
-                        currentDir = new_dir.to_string();
+                    if currentDir.len() > 0 {
+                        currentDir.pop();
+                        dirStack.pop();
                     } else {
                         return Err(anyhow!("Cannot cd any farther"));
                     }
-                } else if dir.starts_with("/") {
-                        currentDir = dir
                 } else {
-                    currentDir = currentDir + &format!("/{}", dir);
+                    currentDir.push(dir);
+                    dirStack.push(currentDir.clone());
                 }
             }
             ParsedLine::Ls => {}
             ParsedLine::File(size) => {
-                *dirSizes.entry(currentDir.clone()).or_default() += size;
+                for entry in dirStack.clone() {
+                    *dirSizes.entry(entry).or_default() += size;
+                }
             }
             ParsedLine::Dir(_) => {}
         }
@@ -71,15 +72,14 @@ fn main() -> anyhow::Result<()> {
     {
         let mut lines = input.lines();
         let dirSizes = walk_dirs(lines)?;
-    let mut total_size = 0;
-    for (_, size) in dirSizes {
-        if size <= 100000 {
-            total_size += size;
+        let mut total_size = 0;
+        for (_, size) in dirSizes {
+            if size <= 100000 {
+                total_size += size;
+            }
         }
-    }
 
-    println!("Score: {}", total_size);
-
+        println!("Score: {}", total_size);
     }
 
     Ok(())
@@ -89,7 +89,7 @@ fn main() -> anyhow::Result<()> {
 mod test {
     use super::*;
 
-    const testData : &str = "$ cd /
+    const testData: &str = "$ cd /
 $ ls
 dir a
 14848514 b.txt
