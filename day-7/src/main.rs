@@ -1,8 +1,8 @@
-use anyhow::{anyhow, Error};
+use anyhow::{anyhow};
 
 use std::{
     collections::HashMap,
-    io::{BufRead, BufReader},
+    io::{BufRead},
 };
 
 #[derive(PartialEq, Debug)]
@@ -39,11 +39,11 @@ where
         if line.is_none() {
             break;
         }
-        let pl = parse_line(&line.unwrap())?;
+        let pl = parse_line(line.unwrap())?;
         match pl {
             ParsedLine::Cd(dir) => {
-                if dir == "..".to_string() {
-                    if currentDir.len() > 0 {
+                if dir == *".." {
+                    if !currentDir.is_empty() {
                         currentDir.pop();
                         dirStack.pop();
                     } else {
@@ -63,14 +63,14 @@ where
             ParsedLine::Dir(_) => {}
         }
     }
-    return Ok(dirSizes);
+    Ok(dirSizes)
 }
 
 fn main() -> anyhow::Result<()> {
     let input = std::fs::read_to_string("input")?;
 
     {
-        let mut lines = input.lines();
+        let lines = input.lines();
         let dirSizes = walk_dirs(lines)?;
         let mut total_size = 0;
         for (_, size) in dirSizes {
@@ -130,11 +130,10 @@ $ ls
 
     #[test]
     fn test_sum() -> anyhow::Result<()> {
-        let mut it = testData.lines();
+        let it = testData.lines();
         let dirSizes = walk_dirs(it)?;
         let mut total_size = 0;
-        for (dir, size) in dirSizes {
-            println!("{} {}", dir, size);
+        for (_dir, size) in dirSizes {
             if size <= 100000 {
                 total_size += size;
             }
