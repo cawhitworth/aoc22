@@ -1,8 +1,9 @@
 use anyhow;
 
 use std::{
-    fs::{File, self},
-    io::{BufRead, BufReader}, collections::HashSet,
+    collections::HashSet,
+    fs::{self, File},
+    io::{BufRead, BufReader},
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
@@ -17,17 +18,17 @@ impl Vec2 {
     }
 
     fn from(dir: (isize, isize)) -> Self {
-        let (x,y) = dir;
+        let (x, y) = dir;
         Vec2 { x, y }
     }
 
     fn from_dir(dir: &str) -> Self {
         match dir {
-            "U" => Vec2 {x:0, y:1},
-            "R" => Vec2 {x:1, y:0},
-            "D" => Vec2 {x:0, y:-1},
-            "L" => Vec2 {x:-1, y:0},
-            _ => panic!("Invalid direction")
+            "U" => Vec2 { x: 0, y: 1 },
+            "R" => Vec2 { x: 1, y: 0 },
+            "D" => Vec2 { x: 0, y: -1 },
+            "L" => Vec2 { x: -1, y: 0 },
+            _ => panic!("Invalid direction"),
         }
     }
 
@@ -46,14 +47,13 @@ impl Vec2 {
     fn abs(&self) -> Vec2 {
         Vec2::new(self.x.abs(), self.y.abs())
     }
-} 
+}
 
 fn tail_pos(head: &Vec2, tail: &Vec2) -> anyhow::Result<Vec2> {
     let dir = Vec2::direction(head, tail);
     let diff = head.sub(&tail).abs();
 
-    if (diff.x <= 2 && diff.y == 2) ||
-       (diff.y <= 2 && diff.x == 2) {
+    if (diff.x <= 2 && diff.y == 2) || (diff.y <= 2 && diff.x == 2) {
         Ok(tail.add(&dir))
     } else if diff.x >= 2 && diff.y >= 2 {
         Err(anyhow::anyhow!("{:?} to {:?} is invalid", head, tail))
@@ -65,14 +65,16 @@ fn tail_pos(head: &Vec2, tail: &Vec2) -> anyhow::Result<Vec2> {
 fn parse_line(line: &str) -> anyhow::Result<(usize, Vec2)> {
     let sp = line.split_once(" ");
     if let Some((dir, dist)) = sp {
-        return Ok((dist.parse()?, Vec2::from_dir(dir)))
+        return Ok((dist.parse()?, Vec2::from_dir(dir)));
     }
 
     Err(anyhow::anyhow!("Parse failed: {}", line))
 }
 
 fn count_tail_visits<'a, I>(start: &Vec2, length: usize, lines: I) -> anyhow::Result<usize>
-where I: Iterator<Item = &'a str> {
+where
+    I: Iterator<Item = &'a str>,
+{
     let mut visits: HashSet<Vec2> = HashSet::new();
 
     let mut rope = vec![*start; length];
@@ -81,7 +83,7 @@ where I: Iterator<Item = &'a str> {
         for _ in 0..distance {
             rope[0] = rope[0].add(&direction);
             for knot in 1..length {
-                rope[knot] = tail_pos(&rope[knot-1], &rope[knot])?;
+                rope[knot] = tail_pos(&rope[knot - 1], &rope[knot])?;
             }
             visits.insert(rope[length - 1]);
         }
@@ -93,7 +95,7 @@ where I: Iterator<Item = &'a str> {
 fn main() -> anyhow::Result<()> {
     let input = fs::read_to_string("input")?;
 
-    let head = Vec2::new(0,0);
+    let head = Vec2::new(0, 0);
     let visits = count_tail_visits(&head, 2, input.clone().lines())?;
     let visits2 = count_tail_visits(&head, 10, input.clone().lines())?;
 
@@ -112,12 +114,12 @@ mod test {
     #[test]
     fn test() -> anyhow::Result<()> {
         let test_data = vec![
-                ( (0,0), (0,0), (0,0) ),
-                ( (0,1), (0,0), (0,0) ),
-                ( (0,2), (0,0), (0,1) ),
-                ( (1,2), (1,0), (1,1) ),
-                ( (2,2), (2,0), (2,1) ),
-                ( (3,2), (2,0), (3,1) ),
+            ((0, 0), (0, 0), (0, 0)),
+            ((0, 1), (0, 0), (0, 0)),
+            ((0, 2), (0, 0), (0, 1)),
+            ((1, 2), (1, 0), (1, 1)),
+            ((2, 2), (2, 0), (2, 1)),
+            ((3, 2), (2, 0), (3, 1)),
         ];
 
         for (head, tail, expected) in test_data {
@@ -132,14 +134,12 @@ mod test {
     }
 
     #[test]
-    fn test_parse() -> anyhow::Result<()>
-    {
+    fn test_parse() -> anyhow::Result<()> {
         let test_data = vec![
             ("U 1", (1, (0, 1))),
             ("R 2", (2, (1, 0))),
             ("D 3", (3, (0, -1))),
             ("L 4", (4, (-1, 0))),
-
         ];
 
         for (input, (dir, v)) in test_data {
@@ -152,8 +152,7 @@ mod test {
 
     #[test]
     fn test_visit() -> anyhow::Result<()> {
-        let test_data = 
-"R 4
+        let test_data = "R 4
 U 4
 L 3
 D 1
@@ -161,16 +160,15 @@ R 4
 D 1
 L 5
 R 2";
-        let head = Vec2::new(0,0);
+        let head = Vec2::new(0, 0);
         let visits = count_tail_visits(&head, 2, test_data.lines())?;
         assert_eq!(visits, 13);
         Ok(())
     }
-    
+
     #[test]
     fn test_visit_10() -> anyhow::Result<()> {
-        let test_data = 
-"R 4
+        let test_data = "R 4
 U 4
 L 3
 D 1
@@ -178,7 +176,7 @@ R 4
 D 1
 L 5
 R 2";
-        let head = Vec2::new(0,0);
+        let head = Vec2::new(0, 0);
         let visits = count_tail_visits(&head, 10, test_data.lines())?;
         assert_eq!(visits, 1);
         Ok(())
@@ -186,8 +184,7 @@ R 2";
 
     #[test]
     fn test_visit_10_2() -> anyhow::Result<()> {
-        let test_data = 
-"R 5
+        let test_data = "R 5
 U 8
 L 8
 D 3
@@ -195,11 +192,9 @@ R 17
 D 10
 L 25
 U 20";
-        let head = Vec2::new(0,0);
+        let head = Vec2::new(0, 0);
         let visits = count_tail_visits(&head, 10, test_data.lines())?;
         assert_eq!(visits, 36);
         Ok(())
     }
-
-
 }
