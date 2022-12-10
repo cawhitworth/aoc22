@@ -11,19 +11,35 @@ struct Vec2 {
     y: isize,
 }
 
-impl Vec2 {
-    fn new(x: isize, y: isize) -> Self {
-        Vec2 { x, y }
-    }
+trait ToVec {
+    fn to_vec(&self) -> Vec2;
+}
 
-    fn from_dir(dir: &str) -> Self {
-        match dir {
+impl ToVec for &str {
+    fn to_vec(&self) -> Vec2 {
+        match *self {
             "U" => Vec2 { x: 0, y: 1 },
             "R" => Vec2 { x: 1, y: 0 },
             "D" => Vec2 { x: 0, y: -1 },
             "L" => Vec2 { x: -1, y: 0 },
             _ => panic!("Invalid direction"),
         }
+    }
+}
+
+impl ToVec for Vec2 {
+    fn to_vec(&self) -> Vec2 {
+        *self
+    }
+}
+
+impl Vec2 {
+    fn new(x: isize, y: isize) -> Self {
+        Vec2 { x, y }
+    }
+
+    fn from<V: ToVec>(v: V) -> Self {
+        v.to_vec()
     }
 
     fn direction(v1: &Vec2, v2: &Vec2) -> Vec2 {
@@ -59,7 +75,7 @@ fn tail_pos(head: &Vec2, tail: &Vec2) -> anyhow::Result<Vec2> {
 fn parse_line(line: &str) -> anyhow::Result<(usize, Vec2)> {
     let sp = line.split_once(' ');
     if let Some((dir, dist)) = sp {
-        return Ok((dist.parse()?, Vec2::from_dir(dir)));
+        return Ok((dist.parse()?, Vec2::from(dir)));
     }
 
     Err(anyhow::anyhow!("Parse failed: {}", line))
