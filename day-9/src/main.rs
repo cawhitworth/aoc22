@@ -1,9 +1,8 @@
-use anyhow;
+
 
 use std::{
     collections::HashSet,
-    fs::{self, File},
-    io::{BufRead, BufReader},
+    fs::{self},
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
@@ -51,7 +50,7 @@ impl Vec2 {
 
 fn tail_pos(head: &Vec2, tail: &Vec2) -> anyhow::Result<Vec2> {
     let dir = Vec2::direction(head, tail);
-    let diff = head.sub(&tail).abs();
+    let diff = head.sub(tail).abs();
 
     if (diff.x <= 2 && diff.y == 2) || (diff.y <= 2 && diff.x == 2) {
         Ok(tail.add(&dir))
@@ -63,7 +62,7 @@ fn tail_pos(head: &Vec2, tail: &Vec2) -> anyhow::Result<Vec2> {
 }
 
 fn parse_line(line: &str) -> anyhow::Result<(usize, Vec2)> {
-    let sp = line.split_once(" ");
+    let sp = line.split_once(' ');
     if let Some((dir, dist)) = sp {
         return Ok((dist.parse()?, Vec2::from_dir(dir)));
     }
@@ -96,8 +95,8 @@ fn main() -> anyhow::Result<()> {
     let input = fs::read_to_string("input")?;
 
     let head = Vec2::new(0, 0);
-    let visits = count_tail_visits(&head, 2, input.clone().lines())?;
-    let visits2 = count_tail_visits(&head, 10, input.clone().lines())?;
+    let visits = count_tail_visits(&head, 2, input.lines())?;
+    let visits2 = count_tail_visits(&head, 10, input.lines())?;
 
     println!("Score: {}", visits);
     println!("Score: {}", visits2);
@@ -107,7 +106,7 @@ fn main() -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod test {
-    use std::any;
+    
 
     use super::*;
 
