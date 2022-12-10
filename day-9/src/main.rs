@@ -16,11 +16,6 @@ impl Vec2 {
         Vec2 { x, y }
     }
 
-    fn from(dir: (isize, isize)) -> Self {
-        let (x, y) = dir;
-        Vec2 { x, y }
-    }
-
     fn from_dir(dir: &str) -> Self {
         match dir {
             "U" => Vec2 { x: 0, y: 1 },
@@ -122,9 +117,18 @@ mod test {
         ];
 
         for (head, tail, expected) in test_data {
-            let hv = Vec2::from(head);
-            let tv = Vec2::from(tail);
-            let ev = Vec2::from(expected);
+            let hv = {
+                let (x, y) = head;
+                Vec2 { x, y }
+            };
+            let tv = {
+                let (x, y) = tail;
+                Vec2 { x, y }
+            };
+            let ev = {
+                let (x, y) = expected;
+                Vec2 { x, y }
+            };
             let r = tail_pos(&hv, &tv)?;
             assert_eq!(r, ev, "{:?} {:?} expected {:?}, got {:?}", hv, tv, ev, r);
         }
@@ -142,7 +146,10 @@ mod test {
         ];
 
         for (input, (dir, v)) in test_data {
-            let ev = Vec2::from(v);
+            let ev = {
+                let (x, y) = v;
+                Vec2 { x, y }
+            };
             assert_eq!(parse_line(input)?, (dir, ev));
         }
 
