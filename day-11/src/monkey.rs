@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Operation {
     Add(i64),

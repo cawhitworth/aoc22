@@ -41,14 +41,14 @@ fn run_monkeys(monkeys: &mut Vec<monkey::Monkey>, how_worried: i64) -> anyhow::R
 
     for monkey_index in 0..monkeys.len() {
         println!("Monkey {}", monkey_index);
-        let mut monkey = &mut monkeys[monkey_index];
+        let monkey = &mut monkeys[monkey_index];
 
         let v = monkey
             .items
             .clone()
             .into_iter()
             .map(|item| {
-                let mut worry_level = run_operation(&monkey.operation, item) / how_worried;
+                let worry_level = run_operation(&monkey.operation, item) / how_worried;
                 let throw_to = if worry_level % monkey.test.divisible_by == 0 {
                     monkey.test.pass_true
                 } else {
@@ -75,7 +75,7 @@ fn main() -> anyhow::Result<()> {
     let mut monkeys = parse_monkeys(lines)?;
 
     let mut total = vec![0; monkeys.len()];
-    for rounds in 0..20 {
+    for _ in 0..10000 {
         let passes = run_monkeys(&mut monkeys, 1)?;
         total = passes
             .into_iter()
