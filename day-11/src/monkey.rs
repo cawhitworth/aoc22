@@ -110,8 +110,8 @@ impl Monkey {
             if !lines[0].trim().starts_with("Monkey") {
                 return Err(anyhow::anyhow!("Error parsing {} - no monkey", lines[0]));
             }
-            if let Some((_, id)) = lines[0].split_once(" ") {
-                if let Some(id_num) = id.strip_suffix(":") {
+            if let Some((_, id)) = lines[0].split_once(' ') {
+                if let Some(id_num) = id.strip_suffix(':') {
                     id_num.parse()?
                 } else {
                     return Err(anyhow::anyhow!("Error parsing {}", lines[0]));
@@ -125,9 +125,9 @@ impl Monkey {
             if !lines[1].trim().starts_with("Starting items") {
                 return Err(anyhow::anyhow!("Error parsing {} - no items", lines[1]));
             }
-            if let Some((_, items)) = lines[1].split_once(":") {
+            if let Some((_, items)) = lines[1].split_once(':') {
                 items
-                    .split(",")
+                    .split(',')
                     .map(|i| i.trim().parse().unwrap())
                     .collect::<Vec<_>>()
             } else {

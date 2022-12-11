@@ -34,7 +34,7 @@ fn run_operation(op: &monkey::Operation, old: i64) -> i64 {
 fn run_monkeys(monkeys: &mut Vec<monkey::Monkey>, how_worried: i64) -> anyhow::Result<Vec<usize>> {
     let mut inspected = Vec::new();
     let all_divisible_by = monkeys
-        .into_iter()
+        .iter_mut()
         .map(|m| m.test.divisible_by)
         .reduce(|acc, i| acc * i)
         .unwrap();
@@ -83,7 +83,7 @@ fn main() -> anyhow::Result<()> {
             .map(|(i, p)| total[i] + p)
             .collect();
     }
-    let mut monkey_business = total.clone();
+    let mut monkey_business = total;
     monkey_business.sort_by(|a, b| b.cmp(a));
     println!("{:?}", monkey_business[0] * monkey_business[1]);
 
@@ -131,7 +131,7 @@ mod test {
         let mut monkeys = parse_monkeys(it)?;
 
         let mut total = vec![0; monkeys.len()];
-        for rounds in 0..10000 {
+        for _rounds in 0..10000 {
             let passes = run_monkeys(&mut monkeys, 1)?;
             total = passes
                 .into_iter()
