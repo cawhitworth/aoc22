@@ -1,22 +1,9 @@
-use anyhow::Error;
-
-use std::{
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use std::fs;
 
 fn main() -> anyhow::Result<()> {
-    let input = File::open("input")?;
+    let input = fs::read_to_string("input")?;
 
-    let mut total_score = 0;
-    {
-        let reader = BufReader::new(input);
-        for line in reader.lines() {
-            let line_str = line?;
-        }
-    }
-
-    println!("Score: {}", total_score);
+    let lines = input.lines();
 
     Ok(())
 }
