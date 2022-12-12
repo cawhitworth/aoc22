@@ -73,15 +73,17 @@ impl Map {
 
 const SURROUNDING: [&str; 4] = ["R", "D", "U", "L"];
 
-fn solve(map: &Map) -> anyhow::Result<Vec<Vec2>> {
+fn solve(map: &Map, initial_set: Vec<Vec2>) -> anyhow::Result<Vec<Vec2>> {
     let mut visited: HashSet<Vec2> = HashSet::new();
     let mut came_from: HashMap<Vec2, Vec2> = HashMap::new();
     let mut to_visit: VecDeque<Vec2> = VecDeque::new();
 
-    to_visit.push_front(map.start.clone());
+    let mut i = initial_set.clone().into_iter().collect::<VecDeque<_>>();
 
-    println!("Start: {:?}", map.start.clone());
-    println!("End: {:?}", map.end.clone());
+    to_visit.append(&mut i);
+
+    // println!("Start: {:?}", map.start.clone());
+    // println!("End: {:?}", map.end.clone());
     loop {
         if let Some(visiting) = to_visit.pop_front() {
             let visiting_height = match map.get(visiting) {
@@ -90,7 +92,7 @@ fn solve(map: &Map) -> anyhow::Result<Vec<Vec2>> {
                 Some(NodeType::Step(h)) => h,
                 None => { return Err(anyhow::anyhow!("Visiting non-existent node")); }
             };
-            println!("Visiting: {:?} @ {}", visiting, visiting_height);
+            // println!("Visiting: {:?} @ {}", visiting, visiting_height);
             visited.insert(visiting.clone());
             let mut will_visit = SURROUNDING
                 .iter()
@@ -100,13 +102,13 @@ fn solve(map: &Map) -> anyhow::Result<Vec<Vec2>> {
                         && !to_visit.contains(p)
                         && match map.get(*p) {
                             Some(NodeType::Start) => false,
-                            Some(NodeType::End) => visiting_height == 24,
-                            Some(NodeType::Step(height)) => height.abs_diff(visiting_height) <= 1,
+                            Some(NodeType::End) => visiting_height >= 24,
+                            Some(NodeType::Step(height)) => height == visiting_height || height == visiting_height + 1 || height < visiting_height,
                             None => false,
                         }
                 })
                 .collect::<VecDeque<_>>();
-            println!("Will visit: {:?}", will_visit);
+            // println!("Will visit: {:?}", will_visit);
 
             for p in will_visit.clone() {
                 came_from.insert(p, visiting);
@@ -114,9 +116,8 @@ fn solve(map: &Map) -> anyhow::Result<Vec<Vec2>> {
 
             to_visit.append(&mut will_visit);
 
-            //println!("Left to visit: {:?}", to_visit);
+            // println!("Left to visit: {:?}", to_visit);
         } else {
-            println!("{:?}", map.get(Vec2::from((160, 13))));
             // println!("Visited: {:?}", visited);
             return Err(anyhow::anyhow!("Didn't reach the end"));
         }
@@ -125,11 +126,11 @@ fn solve(map: &Map) -> anyhow::Result<Vec<Vec2>> {
     let mut path: Vec<Vec2> = Vec::new();
     let mut p = map.end;
     loop {
-        path.push(p);
-        println!("{:?}",p);
-        if p == map.start {
+        if initial_set.contains(&p) {
             break;
         } else {
+            println!("{}", p);
+            path.push(p);
             p = came_from[&p];
         }
     }
@@ -143,7 +144,19 @@ fn main() -> anyhow::Result<()> {
     let lines = input.lines();
     let map = Map::parse(lines)?;
 
-    println!("{}", solve(&map)?.len());
+    let mut initial_set = vec![map.start.clone()];
+
+    for x in 0..map.size.x {
+        for y in 0..map.size.y {
+            let p = Vec2::from((x,y));
+            match map.get(Vec2::from((x,y))) {
+                Some(NodeType::Step(h)) => { if h == 1 { initial_set.push(p); } },
+                _ => {}
+            };
+        }
+    }
+
+    println!("{}", solve(&map, initial_set)?.len());
 
     Ok(())
 }
