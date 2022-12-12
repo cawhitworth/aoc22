@@ -95,7 +95,7 @@ fn solve(map: &Map, initial_set: Vec<Vec2>) -> anyhow::Result<Vec<Vec2>> {
                 }
             };
             // println!("Visiting: {:?} @ {}", visiting, visiting_height);
-            visited.insert(visiting.clone());
+            visited.insert(visiting);
             let mut will_visit = SURROUNDING
                 .iter()
                 .map(|dir| visiting.add(&Vec2::from(*dir)))
@@ -150,7 +150,7 @@ fn main() -> anyhow::Result<()> {
     let lines = input.lines();
     let map = Map::parse(lines)?;
 
-    let mut initial_set = vec![map.start.clone()];
+    let mut initial_set = vec![map.start];
 
     for x in 0..map.size.x {
         for y in 0..map.size.y {
@@ -184,8 +184,8 @@ abdefghi";
     #[test]
     fn test() -> anyhow::Result<()> {
         let map = Map::parse(TEST_DATA.lines())?;
-
-        println!("{}", solve(&map)?.len());
+        let initial_set = vec![map.start];
+        println!("{}", solve(&map, initial_set)?.len());
         Ok(())
     }
 }
