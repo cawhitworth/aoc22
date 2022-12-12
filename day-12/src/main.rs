@@ -133,9 +133,11 @@ fn solve(map: &Map, initial_set: Vec<Vec2>) -> anyhow::Result<Vec<Vec2>> {
     let mut p = map.end;
     loop {
         if initial_set.contains(&p) {
+            if p != map.start {
+                path.push(p);
+            }
             break;
         } else {
-            println!("{}", p);
             path.push(p);
             p = came_from[&p];
         }
@@ -155,14 +157,11 @@ fn main() -> anyhow::Result<()> {
     for x in 0..map.size.x {
         for y in 0..map.size.y {
             let p = Vec2::from((x, y));
-            match map.get(Vec2::from((x, y))) {
-                Some(NodeType::Step(h)) => {
-                    if h == 1 {
-                        initial_set.push(p);
-                    }
+            if let Some(NodeType::Step(h)) = map.get(Vec2::from((x, y))) {
+                if h == 1 {
+                    initial_set.push(p);
                 }
-                _ => {}
-            };
+            }
         }
     }
 
@@ -185,7 +184,7 @@ abdefghi";
     fn test() -> anyhow::Result<()> {
         let map = Map::parse(TEST_DATA.lines())?;
         let initial_set = vec![map.start];
-        println!("{}", solve(&map, initial_set)?.len());
+        assert_eq!(solve(&map, initial_set)?.len(), 31);
         Ok(())
     }
 }
