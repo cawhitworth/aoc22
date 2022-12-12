@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet, VecDeque},
-    fs, any,
+    fs,
 };
 
 mod vec2;
@@ -26,9 +26,9 @@ impl Map {
         I: Iterator<Item = &'a str>,
     {
         let mut nodes = Vec::new();
-        let mut size = Vec2::O();
-        let mut start = Vec2::O();
-        let mut end = Vec2::O();
+        let mut size = Vec2::origin();
+        let mut start = Vec2::origin();
+        let mut end = Vec2::origin();
         for line in lines {
             size.x = line.len() as isize;
             let chars = line.chars();
@@ -90,7 +90,9 @@ fn solve(map: &Map, initial_set: Vec<Vec2>) -> anyhow::Result<Vec<Vec2>> {
                 Some(NodeType::Start) => 0,
                 Some(NodeType::End) => break,
                 Some(NodeType::Step(h)) => h,
-                None => { return Err(anyhow::anyhow!("Visiting non-existent node")); }
+                None => {
+                    return Err(anyhow::anyhow!("Visiting non-existent node"));
+                }
             };
             // println!("Visiting: {:?} @ {}", visiting, visiting_height);
             visited.insert(visiting.clone());
@@ -103,7 +105,11 @@ fn solve(map: &Map, initial_set: Vec<Vec2>) -> anyhow::Result<Vec<Vec2>> {
                         && match map.get(*p) {
                             Some(NodeType::Start) => false,
                             Some(NodeType::End) => visiting_height >= 24,
-                            Some(NodeType::Step(height)) => height == visiting_height || height == visiting_height + 1 || height < visiting_height,
+                            Some(NodeType::Step(height)) => {
+                                height == visiting_height
+                                    || height == visiting_height + 1
+                                    || height < visiting_height
+                            }
                             None => false,
                         }
                 })
@@ -148,9 +154,13 @@ fn main() -> anyhow::Result<()> {
 
     for x in 0..map.size.x {
         for y in 0..map.size.y {
-            let p = Vec2::from((x,y));
-            match map.get(Vec2::from((x,y))) {
-                Some(NodeType::Step(h)) => { if h == 1 { initial_set.push(p); } },
+            let p = Vec2::from((x, y));
+            match map.get(Vec2::from((x, y))) {
+                Some(NodeType::Step(h)) => {
+                    if h == 1 {
+                        initial_set.push(p);
+                    }
+                }
                 _ => {}
             };
         }
@@ -175,7 +185,7 @@ abdefghi";
     fn test() -> anyhow::Result<()> {
         let map = Map::parse(TEST_DATA.lines())?;
 
-        println!("{}",solve(&map)?.len());
+        println!("{}", solve(&map)?.len());
         Ok(())
     }
 }

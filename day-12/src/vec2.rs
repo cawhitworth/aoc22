@@ -38,7 +38,7 @@ impl Vec2 {
         Vec2 { x, y }
     }
 
-    pub fn O() -> Self {
+    pub fn origin() -> Self {
         Vec2::from((0, 0))
     }
 
