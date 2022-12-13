@@ -50,18 +50,18 @@ fn append_to(idx: Index, list_idx: Index, arena: &mut Arena<Node>) -> anyhow::Re
     Ok(())
 }
 
-fn get_number(chars: &Vec<char>, idx: usize) -> anyhow::Result<(i32, usize)> {
+fn get_number(chars: &[char], idx: usize) -> anyhow::Result<(i32, usize)> {
     let mut next = idx;
     let mut str = "".to_string();
     loop {
-        if chars[next].is_digit(10) {
+        if chars[next].is_ascii_digit() {
             str += &chars[next].to_string();
             next += 1;
         } else {
             break;
         }
     }
-    return Ok((str.parse()?, next));
+    Ok((str.parse()?, next))
 }
 
 fn parse(line: &str, arena: &mut Arena<Node>) -> anyhow::Result<Index> {
@@ -137,12 +137,12 @@ fn compare(root1: Index, root2: Index, arena: &mut Arena<Node>) -> anyhow::Resul
 
         (Node::Int(_), Node::List(_)) => {
             let promoted = promote(root1, arena);
-            return compare(promoted, root2, arena);
+            compare(promoted, root2, arena)
         }
 
         (Node::List(_), Node::Int(_)) => {
             let promoted = promote(root2, arena);
-            return compare(root1, promoted, arena);
+            compare(root1, promoted, arena)
         }
 
         (Node::Int(lhs), Node::Int(rhs)) => Ok(lhs.cmp(&rhs)),
@@ -163,23 +163,19 @@ where
 {
     let mut pair = 0;
     let mut score = 0;
-    loop {
-        if let Some(line1) = lines.next() {
-            pair += 1;
-            let line2 = lines.next().unwrap();
-            lines.next();
-            let result = compare_lines(line1, line2)?;
-            match result {
-                Ordering::Less => {
-                    score += pair;
-                }
-                Ordering::Equal => {
-                    return Err(anyhow::anyhow!("Non-ordered pair {} vs {}", line1, line2));
-                }
-                Ordering::Greater => {}
+    while let Some(line1) = lines.next() {
+        pair += 1;
+        let line2 = lines.next().unwrap();
+        lines.next();
+        let result = compare_lines(line1, line2)?;
+        match result {
+            Ordering::Less => {
+                score += pair;
             }
-        } else {
-            break;
+            Ordering::Equal => {
+                return Err(anyhow::anyhow!("Non-ordered pair {} vs {}", line1, line2));
+            }
+            Ordering::Greater => {}
         }
     }
     Ok(score)
@@ -194,7 +190,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     {
-        let input_clone = input.clone();
+        let input_clone = input;
         let mut lines = input_clone
             .lines()
             .filter(|l| !l.is_empty())
@@ -243,7 +239,7 @@ mod test {
         l2.push(arena.insert(Node::Int(2)));
         l.push(arena.insert(Node::List(l2)));
         l.push(arena.insert(Node::Int(3)));
-        let id = arena.insert(Node::List(l));
+        let _id = arena.insert(Node::List(l));
     }
 
     #[test]
@@ -357,7 +353,7 @@ mod test {
         let mut arena: Arena<Node> = Arena::new();
         let idx = parse(line1, &mut arena)?;
         walk(&arena, idx);
-        println!("");
+        println!();
         let idx2 = parse(line2, &mut arena)?;
         let result = compare(idx, idx2, &mut arena)?;
         assert_eq!(result, Ordering::Greater);
@@ -401,7 +397,7 @@ mod test {
         for l in lines
             .iter()
             .enumerate()
-            .filter(|(i, s)| *s == &"[[2]]" || *s == &"[[6]]")
+            .filter(|(_i, s)| *s == &"[[2]]" || *s == &"[[6]]")
         {
             println!("{:?}", l);
         }
