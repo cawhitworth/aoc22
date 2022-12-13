@@ -235,8 +235,7 @@ mod test {
 
         let mut l = Vec::new();
         l.push(arena.insert(Node::Int(1)));
-        let mut l2 = Vec::new();
-        l2.push(arena.insert(Node::Int(2)));
+        let l2 = vec![arena.insert(Node::Int(2))];
         l.push(arena.insert(Node::List(l2)));
         l.push(arena.insert(Node::Int(3)));
         let _id = arena.insert(Node::List(l));
