@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::binary_heap::Iter, fmt, fs};
+use std::{cmp::Ordering, fs};
 
 struct Arena<T> {
     items: Vec<T>,
@@ -113,21 +113,6 @@ fn parse(line: &str, arena: &mut Arena<Node>) -> anyhow::Result<Index> {
     }
 }
 
-fn walk(arena: &Arena<Node>, idx: Index) {
-    match arena.get(idx) {
-        Node::Int(x) => {
-            print!("{}, ", x);
-        }
-        Node::List(l) => {
-            print!("[");
-            for i in l {
-                walk(arena, *i);
-            }
-            print!("]");
-        }
-    }
-}
-
 fn promote(idx: Index, arena: &mut Arena<Node>) -> Index {
     let list = vec![idx];
     arena.insert(Node::List(list))
@@ -161,10 +146,6 @@ fn compare(root1: Index, root2: Index, arena: &mut Arena<Node>) -> anyhow::Resul
         }
 
         (Node::Int(lhs), Node::Int(rhs)) => Ok(lhs.cmp(&rhs)),
-
-        (_, _) => {
-            return Err(anyhow::anyhow!("Not implemented yet"));
-        }
     }
 }
 
@@ -225,7 +206,7 @@ fn main() -> anyhow::Result<()> {
         for (l, _) in lines
             .iter()
             .enumerate()
-            .filter(|(i, s)| *s == &"[[2]]" || *s == &"[[6]]")
+            .filter(|(_, s)| *s == &"[[2]]" || *s == &"[[6]]")
         {
             println!("{:?}", l + 1);
         }
@@ -236,6 +217,21 @@ fn main() -> anyhow::Result<()> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    fn walk(arena: &Arena<Node>, idx: Index) {
+        match arena.get(idx) {
+            Node::Int(x) => {
+                print!("{}, ", x);
+            }
+            Node::List(l) => {
+                print!("[");
+                for i in l {
+                    walk(arena, *i);
+                }
+                print!("]");
+            }
+        }
+    }
 
     #[test]
     fn test_arena() {
