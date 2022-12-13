@@ -61,7 +61,7 @@ fn get_number(chars: &Vec<char>, idx: usize) -> anyhow::Result<(i32, usize)> {
             break;
         }
     }
-    return Ok((str.parse()?, next))
+    return Ok((str.parse()?, next));
 }
 
 fn parse(line: &str, arena: &mut Arena<Node>) -> anyhow::Result<Index> {
@@ -103,7 +103,7 @@ fn parse(line: &str, arena: &mut Arena<Node>) -> anyhow::Result<Index> {
             }
         }
         if chars_idx >= chars.len() {
-            break
+            break;
         }
     }
 
@@ -160,9 +160,7 @@ fn compare(root1: Index, root2: Index, arena: &mut Arena<Node>) -> anyhow::Resul
             return compare(root1, promoted, arena);
         }
 
-        (Node::Int(lhs), Node::Int(rhs)) => {
-            Ok(lhs.cmp(&rhs))
-        }
+        (Node::Int(lhs), Node::Int(rhs)) => Ok(lhs.cmp(&rhs)),
 
         (_, _) => {
             return Err(anyhow::anyhow!("Not implemented yet"));
@@ -170,8 +168,18 @@ fn compare(root1: Index, root2: Index, arena: &mut Arena<Node>) -> anyhow::Resul
     }
 }
 
+fn compare_lines(lhs: &str, rhs: &str) -> anyhow::Result<Ordering> {
+    let mut arena = Arena::new();
+    let root1 = parse(lhs, &mut arena)?;
+    let root2 = parse(rhs, &mut arena)?;
+    let result = compare(root1, root2, &mut arena)?;
+    Ok(result)
+}
+
 fn score<'a, I>(lines: &mut I) -> anyhow::Result<usize>
-where I: Iterator<Item = &'a str> {
+where
+    I: Iterator<Item = &'a str>,
+{
     let mut pair = 0;
     let mut score = 0;
     loop {
@@ -179,11 +187,7 @@ where I: Iterator<Item = &'a str> {
             pair += 1;
             let line2 = lines.next().unwrap();
             lines.next();
-
-            let mut arena = Arena::new();
-            let root1 = parse(line1, &mut arena)?;
-            let root2 = parse(line2, &mut arena)?;
-            let result = compare(root1, root2, &mut arena)?;
+            let result = compare_lines(line1, line2)?;
             match result {
                 Ordering::Less => {
                     score += pair;
@@ -191,9 +195,7 @@ where I: Iterator<Item = &'a str> {
                 Ordering::Equal => {
                     return Err(anyhow::anyhow!("Non-ordered pair {} vs {}", line1, line2));
                 }
-                Ordering::Greater => {
-
-                }
+                Ordering::Greater => {}
             }
         } else {
             break;
@@ -204,9 +206,30 @@ where I: Iterator<Item = &'a str> {
 
 fn main() -> anyhow::Result<()> {
     let input = fs::read_to_string("input")?;
+    {
+        let input_clone = input.clone();
+        let mut lines = input_clone.lines();
+        println!("{}", score(&mut lines)?);
+    }
 
-    let mut lines = input.lines();
-    println!("{}", score(&mut lines)?);
+    {
+        let input_clone = input.clone();
+        let mut lines = input_clone
+            .lines()
+            .filter(|l| !l.is_empty())
+            .collect::<Vec<_>>();
+        lines.push("[[2]]");
+        lines.push("[[6]]");
+        lines.sort_by(|lhs, rhs| compare_lines(lhs, rhs).unwrap());
+
+        for (l, _) in lines
+            .iter()
+            .enumerate()
+            .filter(|(i, s)| *s == &"[[2]]" || *s == &"[[6]]")
+        {
+            println!("{:?}", l + 1);
+        }
+    }
     Ok(())
 }
 
@@ -292,12 +315,9 @@ mod test {
             println!();
             let result = compare(idx, idx2, &mut arena)?;
             assert_eq!(
-                result,
-                expected_result,
+                result, expected_result,
                 "{} {} {:?}",
-                lhs,
-                rhs,
-                expected_result
+                lhs, rhs, expected_result
             );
         }
         Ok(())
@@ -305,8 +325,7 @@ mod test {
 
     #[test]
     fn test_score() -> anyhow::Result<()> {
-        let test_data = 
-"[1,1,3,1,1]
+        let test_data = "[1,1,3,1,1]
 [1,1,5,1,1]
 
 [[1],[2,3,4]]
@@ -347,5 +366,48 @@ mod test {
         let result = compare(idx, idx2, &mut arena)?;
         assert_eq!(result, Ordering::Greater);
         Ok(())
+    }
+
+    #[test]
+    fn test_sort() {
+        let test_data = "[1,1,3,1,1]
+[1,1,5,1,1]
+
+[[1],[2,3,4]]
+[[1],4]
+
+[9]
+[[8,7,6]]
+
+[[4,4],4,4]
+[[4,4],4,4,4]
+
+[7,7,7,7]
+[7,7,7]
+
+[]
+[3]
+
+[[[]]]
+[[]]
+
+[1,[2,[3,[4,[5,6,7]]]],8,9]
+[1,[2,[3,[4,[5,6,0]]]],8,9]";
+
+        let mut lines = test_data
+            .lines()
+            .filter(|l| !l.is_empty())
+            .collect::<Vec<_>>();
+        lines.push("[[2]]");
+        lines.push("[[6]]");
+        lines.sort_by(|lhs, rhs| compare_lines(lhs, rhs).unwrap());
+
+        for l in lines
+            .iter()
+            .enumerate()
+            .filter(|(i, s)| *s == &"[[2]]" || *s == &"[[6]]")
+        {
+            println!("{:?}", l);
+        }
     }
 }
