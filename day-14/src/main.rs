@@ -41,7 +41,7 @@ enum DropResult {
 
 fn drop_sand(field: &mut Field, start: Vec2) -> Result<DropResult> {
     if field.get(start)? != Cell::Empty {
-        return Ok(DropResult::Full)
+        return Ok(DropResult::Full);
     }
     let mut pos = start;
 
@@ -88,12 +88,11 @@ where
         top_left.x -= 200;
         bottom_right.x += 200;
         bottom_right.y += 2;
-        lines.push( vec![ 
+        lines.push(vec![
             Vec2::new(top_left.x, bottom_right.y),
-            Vec2::new(bottom_right.x, bottom_right.y)
+            Vec2::new(bottom_right.x, bottom_right.y),
         ]);
     }
-
 
     let mut field = Field::new(top_left, bottom_right);
 
@@ -132,13 +131,12 @@ fn part2(input: &str) -> Result<()> {
         i += 1;
         let r = drop_sand(&mut field, Vec2::new(500, 0))?;
         match r {
-            DropResult::Okay => {},
-            DropResult::OutOfBounds => 
-            {
+            DropResult::Okay => {}
+            DropResult::OutOfBounds => {
                 println!("{}", field);
                 return Err(anyhow!("Should never get out of bounds"));
-            },
-            DropResult::Full => break
+            }
+            DropResult::Full => break,
         }
     }
 
@@ -160,7 +158,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use anyhow::{Result};
+    use anyhow::Result;
 
     const TEST_DATA: &str = "498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9";
@@ -221,7 +219,7 @@ mod test {
             match r {
                 DropResult::Okay => assert!(i < 93),
                 DropResult::OutOfBounds => assert!(false),
-                DropResult::Full => assert!(i >= 93)
+                DropResult::Full => assert!(i >= 93),
             }
         }
 
