@@ -218,7 +218,7 @@ mod test {
             let r = drop_sand(&mut field, Vec2::new(500, 0))?;
             match r {
                 DropResult::Okay => assert!(i < 93),
-                DropResult::OutOfBounds => assert!(false),
+                DropResult::OutOfBounds => unreachable!(),
                 DropResult::Full => assert!(i >= 93),
             }
         }
