@@ -24,7 +24,10 @@ impl From<Vec2> for (isize, isize) {
 impl From<&str> for Vec2 {
     fn from(s: &str) -> Self {
         let (x, y) = s.split_once(",").unwrap();
-        Vec2 { x: x.parse().unwrap(), y: y.parse().unwrap() }
+        Vec2 {
+            x: x.parse().unwrap(),
+            y: y.parse().unwrap(),
+        }
     }
 }
 
@@ -52,7 +55,6 @@ impl Vec2 {
     pub fn abs(&self) -> Vec2 {
         Vec2::new(self.x.abs(), self.y.abs())
     }
-
 }
 
 impl fmt::Display for Vec2 {

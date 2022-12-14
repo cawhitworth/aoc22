@@ -1,24 +1,31 @@
+use core::fmt;
+use std::fmt::Write;
+
 use crate::vec2::Vec2;
-use itertools::Itertools;
 use anyhow::{anyhow, Result};
+use itertools::Itertools;
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum Cell {
     Empty,
     Rock,
-    Sand
+    Sand,
 }
 
 pub struct Field {
     origin: Vec2,
     size: Vec2,
-    cells: Vec<Cell>
+    cells: Vec<Cell>,
 }
 
 impl Field {
     pub fn new(top_left: Vec2, bottom_right: Vec2) -> Self {
-        let size = bottom_right.sub(&top_left).add(&Vec2::new(1,1));
-        Field { origin: top_left, size, cells: vec![Cell::Empty; (size.x * size.y) as usize] }
+        let size = bottom_right.sub(&top_left).add(&Vec2::new(1, 1));
+        Field {
+            origin: top_left,
+            size,
+            cells: vec![Cell::Empty; (size.x * size.y) as usize],
+        }
     }
 
     fn cell_offset(&self, p: Vec2) -> Result<usize> {
@@ -28,6 +35,13 @@ impl Field {
         } else {
             Err(anyhow!("Cell out of bounds"))
         }
+    }
+
+    pub fn in_bounds(&self, p: Vec2) -> bool {
+        p.x >= self.origin.x
+            && p.x < self.origin.x + self.size.x
+            && p.y >= self.origin.y
+            && p.y < self.origin.y + self.size.y
     }
 
     pub fn get(&self, p: Vec2) -> Result<Cell> {
@@ -40,7 +54,7 @@ impl Field {
         Ok(())
     }
 
-    pub fn draw_lines(&mut self, points: Vec<Vec2>) -> Result<()> {
+    pub fn draw_lines(&mut self, points: &Vec<Vec2>) -> Result<()> {
         for (first, second) in points.iter().tuple_windows() {
             let dir = first.direction_to(second);
             let mut pos = *first;
@@ -52,6 +66,24 @@ impl Field {
                 pos = pos.add(&dir);
             }
         }
+        Ok(())
+    }
+}
+
+impl fmt::Display for Field {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for y in 0..self.size.y {
+            for x in 0..self.size.x {
+                let c = x + y * self.size.x;
+                f.write_char(match self.cells[c as usize] {
+                    Cell::Empty => '.',
+                    Cell::Rock => '#',
+                    Cell::Sand => 'o',
+                })?;
+            }
+            f.write_str("\n")?;
+        }
+
         Ok(())
     }
 }
