@@ -23,7 +23,7 @@ impl From<Vec2> for (isize, isize) {
 
 impl From<&str> for Vec2 {
     fn from(s: &str) -> Self {
-        let (x, y) = s.split_once(",").unwrap();
+        let (x, y) = s.split_once(',').unwrap();
         Vec2 {
             x: x.parse().unwrap(),
             y: y.parse().unwrap(),

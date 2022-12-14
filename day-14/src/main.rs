@@ -14,13 +14,13 @@ fn parse_line(l: &str) -> Result<Vec<Vec2>> {
     Ok(l.split("->").map(|s| Vec2::from(s.trim())).collect())
 }
 
-fn bounds(v: &Vec<Vec2>) -> Result<(Vec2, Vec2)> {
-    let mut itr = v.into_iter();
+fn bounds(v: &[Vec2]) -> Result<(Vec2, Vec2)> {
+    let mut itr = v.iter();
     let first = itr.next();
     if first.is_none() {
         return Err(anyhow!("Cannot get bounds for no Vec2s"));
     }
-    let (mut top_left, mut bottom_right) = (first.unwrap().clone(), first.unwrap().clone());
+    let (mut top_left, mut bottom_right) = (*first.unwrap(), *first.unwrap());
 
     for v in itr {
         top_left.x = min(top_left.x, v.x);
@@ -76,7 +76,7 @@ fn parse_lines<'a, I>(l: I) -> Result<Field>
 where
     I: Iterator<Item = &'a str>,
 {
-    let lines = l.map(|l| parse_line(l)).collect::<Result<Vec<_>>>()?;
+    let lines = l.map(parse_line).collect::<Result<Vec<_>>>()?;
 
     let (mut top_left, bottom_right) =
         bounds(&lines.clone().into_iter().flatten().collect::<Vec<_>>())?;
@@ -115,7 +115,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use anyhow::{anyhow, Result};
+    use anyhow::{Result};
 
     const TEST_DATA: &str = "498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9";
@@ -150,7 +150,7 @@ mod test {
 
     #[test]
     fn test_drop() -> Result<()> {
-        let mut l = TEST_DATA.lines();
+        let l = TEST_DATA.lines();
         let mut field = parse_lines(l)?;
 
         drop_sand(&mut field, Vec2::new(500, 0))?;
@@ -169,7 +169,7 @@ mod test {
 
     #[test]
     fn test_drop_lots() -> Result<()> {
-        let mut l = TEST_DATA.lines();
+        let l = TEST_DATA.lines();
         let mut field = parse_lines(l)?;
         for i in 0..40 {
             let r = drop_sand(&mut field, Vec2::new(500, 0))?;

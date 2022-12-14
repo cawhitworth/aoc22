@@ -54,7 +54,7 @@ impl Field {
         Ok(())
     }
 
-    pub fn draw_lines(&mut self, points: &Vec<Vec2>) -> Result<()> {
+    pub fn draw_lines(&mut self, points: &[Vec2]) -> Result<()> {
         for (first, second) in points.iter().tuple_windows() {
             let dir = first.direction_to(second);
             let mut pos = *first;
