@@ -36,11 +36,12 @@ fn bounds(v: &[Vec2]) -> Result<(Vec2, Vec2)> {
 enum DropResult {
     Okay,
     OutOfBounds,
+    Full,
 }
 
 fn drop_sand(field: &mut Field, start: Vec2) -> Result<DropResult> {
     if field.get(start)? != Cell::Empty {
-        return Err(anyhow!("Cannot start from an occupied cell"));
+        return Ok(DropResult::Full)
     }
     let mut pos = start;
 
@@ -72,16 +73,27 @@ fn drop_sand(field: &mut Field, start: Vec2) -> Result<DropResult> {
     Ok(DropResult::Okay)
 }
 
-fn parse_lines<'a, I>(l: I) -> Result<Field>
+fn parse_lines<'a, I>(l: I, with_baseline: bool) -> Result<Field>
 where
     I: Iterator<Item = &'a str>,
 {
-    let lines = l.map(parse_line).collect::<Result<Vec<_>>>()?;
+    let mut lines = l.map(parse_line).collect::<Result<Vec<_>>>()?;
 
-    let (mut top_left, bottom_right) =
+    let (mut top_left, mut bottom_right) =
         bounds(&lines.clone().into_iter().flatten().collect::<Vec<_>>())?;
 
     top_left.y = min(top_left.y, 0);
+
+    if with_baseline {
+        top_left.x -= 200;
+        bottom_right.x += 200;
+        bottom_right.y += 2;
+        lines.push( vec![ 
+            Vec2::new(top_left.x, bottom_right.y),
+            Vec2::new(bottom_right.x, bottom_right.y)
+        ]);
+    }
+
 
     let mut field = Field::new(top_left, bottom_right);
 
@@ -92,10 +104,9 @@ where
     Ok(field)
 }
 
-fn main() -> Result<()> {
-    let input = fs::read_to_string("input")?;
+fn part1(input: &str) -> Result<()> {
     let lines = input.lines();
-    let mut field = parse_lines(lines)?;
+    let mut field = parse_lines(lines, false)?;
 
     let mut i = 0;
     loop {
@@ -106,8 +117,42 @@ fn main() -> Result<()> {
         }
     }
 
+    // println!("{}", field);
+    println!("{}", i - 1);
+
+    Ok(())
+}
+
+fn part2(input: &str) -> Result<()> {
+    let lines = input.lines();
+    let mut field = parse_lines(lines, true)?;
+
+    let mut i = 0;
+    loop {
+        i += 1;
+        let r = drop_sand(&mut field, Vec2::new(500, 0))?;
+        match r {
+            DropResult::Okay => {},
+            DropResult::OutOfBounds => 
+            {
+                println!("{}", field);
+                return Err(anyhow!("Should never get out of bounds"));
+            },
+            DropResult::Full => break
+        }
+    }
+
     println!("{}", field);
     println!("{}", i - 1);
+
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    let input = fs::read_to_string("input")?;
+
+    part1(&input)?;
+    part2(&input)?;
 
     Ok(())
 }
@@ -151,7 +196,7 @@ mod test {
     #[test]
     fn test_drop() -> Result<()> {
         let l = TEST_DATA.lines();
-        let mut field = parse_lines(l)?;
+        let mut field = parse_lines(l, false)?;
 
         drop_sand(&mut field, Vec2::new(500, 0))?;
         drop_sand(&mut field, Vec2::new(500, 0))?;
@@ -170,12 +215,13 @@ mod test {
     #[test]
     fn test_drop_lots() -> Result<()> {
         let l = TEST_DATA.lines();
-        let mut field = parse_lines(l)?;
-        for i in 0..40 {
+        let mut field = parse_lines(l, true)?;
+        for i in 0..100 {
             let r = drop_sand(&mut field, Vec2::new(500, 0))?;
             match r {
-                DropResult::Okay => assert!(i < 24),
-                DropResult::OutOfBounds => assert!(i >= 24),
+                DropResult::Okay => assert!(i < 93),
+                DropResult::OutOfBounds => assert!(false),
+                DropResult::Full => assert!(i >= 93)
             }
         }
 
