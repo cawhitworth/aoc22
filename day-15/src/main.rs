@@ -63,23 +63,18 @@ where
     lines.map(parse_line).collect::<Result<Vec<_>>>()
 }
 
-fn get_cell(pos: Vec2, sensors: &Vec<Sensor>) -> Cell {
-    let mut iter = sensors.into_iter();
-    loop {
-        if let Some(sensor) = iter.next() {
-            if sensor.loc == pos {
-                return Cell::Sensor;
-            }
-            if sensor.beacon == pos {
-                return Cell::Beacon;
-            }
-            let beacon_distance = sensor.distance();
-            let pos_distance = sensor.loc.manhattan(&pos);
-            if pos_distance <= beacon_distance {
-                return Cell::InRange;
-            }
-        } else {
-            break;
+fn get_cell(pos: Vec2, sensors: &[Sensor]) -> Cell {
+    for sensor in sensors {
+        if sensor.loc == pos {
+            return Cell::Sensor;
+        }
+        if sensor.beacon == pos {
+            return Cell::Beacon;
+        }
+        let beacon_distance = sensor.distance();
+        let pos_distance = sensor.loc.manhattan(&pos);
+        if pos_distance <= beacon_distance {
+            return Cell::InRange;
         }
     }
 
@@ -154,7 +149,7 @@ mod test {
         let mut result = vec![];
         for s in sensors {
             let d = s.distance();
-            let distance_to_projection = (s.loc.y - y).abs() as usize;
+            let distance_to_projection = (s.loc.y - y).unsigned_abs();
             if distance_to_projection > d {
                 continue;
             }
@@ -204,7 +199,7 @@ mod test {
         assert_eq!(merge((0, 5), (5, 6)), Some((0, 6)));
     }
 
-    static TEST_DATA: &'static str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+    static TEST_DATA: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
 Sensor at x=9, y=16: closest beacon is at x=10, y=16
 Sensor at x=13, y=2: closest beacon is at x=15, y=3
 Sensor at x=12, y=14: closest beacon is at x=10, y=16
